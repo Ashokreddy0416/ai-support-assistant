@@ -220,3 +220,4 @@ __marimo__/
 .venv/
 data/*.jsonl
 data/*.csv
+data/chroma/
