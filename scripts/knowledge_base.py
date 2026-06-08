@@ -58,3 +58,31 @@ with open("data/chunks.jsonl", "w", encoding="utf-8") as f:
         f.write(json.dumps(c) + "\n")
 
 print(f"Saved {len(all_chunks)} chunks to data/chunks.jsonl")
+
+def extract_links(url):
+    resp = requests.get(url, timeout=30)
+    soup = BeautifulSoup(resp.text, "lxml")
+    article = soup.find("article")
+    links = []
+    if article:
+        for a in article.find_all("a", href=True):
+            href = a["href"]
+            if href.startswith("https://fastapi.tiangolo.com"):
+                links.append(href.split("#")[0].rstrip("/") + "/")
+    return links
+
+valid_urls = {doc["url"] for doc in documents}
+edges = []
+for doc in documents:
+    for target in extract_links(doc["url"]):
+        if target in valid_urls and target != doc["url"]:
+            edges.append((doc["url"], target))
+    time.sleep(0.5)
+
+edges = list(set(edges))
+with open("data/graph_edges.csv", "w", encoding="utf-8") as f:
+    f.write("source,target\n")
+    for src, tgt in edges:
+        f.write(f"{src},{tgt}\n")
+
+print(f"Saved {len(edges)} edges to data/graph_edges.csv")
