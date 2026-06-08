@@ -1,5 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
+import json
+import time
 
 SITEMAP_URL = "https://fastapi.tiangolo.com/sitemap.xml"
 
@@ -15,6 +17,19 @@ def scrape_page(url):
     text = article.get_text(separator=" ", strip=True) if article else ""
     return {"url": url, "title": title, "text": text}
 
-doc = scrape_page(urls[1])
-print("TITLE:", doc["title"])
-print("TEXT (first 200 chars):", doc["text"][:200])
+documents = []
+for i, url in enumerate(urls):
+    try:
+        doc = scrape_page(url)
+        if doc["text"]:
+            doc["id"] = f"doc_{i}"
+            documents.append(doc)
+        time.sleep(0.5)
+    except Exception as e:
+        print(f"Skipped {url}: {e}")
+
+with open("data/documents.jsonl", "w", encoding="utf-8") as f:
+    for doc in documents:
+        f.write(json.dumps(doc) + "\n")
+
+print(f"Saved {len(documents)} documents to data/documents.jsonl")
