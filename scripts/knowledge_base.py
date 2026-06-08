@@ -33,3 +33,28 @@ with open("data/documents.jsonl", "w", encoding="utf-8") as f:
         f.write(json.dumps(doc) + "\n")
 
 print(f"Saved {len(documents)} documents to data/documents.jsonl")
+
+def chunk_text(text, size=800, overlap=150):
+    chunks = []
+    start = 0
+    while start < len(text):
+        chunks.append(text[start:start + size])
+        start += size - overlap
+    return chunks
+
+all_chunks = []
+for doc in documents:
+    for j, piece in enumerate(chunk_text(doc["text"])):
+        all_chunks.append({
+            "chunk_id": f"{doc['id']}_chunk_{j}",
+            "doc_id": doc["id"],
+            "url": doc["url"],
+            "title": doc["title"],
+            "text": piece,
+        })
+
+with open("data/chunks.jsonl", "w", encoding="utf-8") as f:
+    for c in all_chunks:
+        f.write(json.dumps(c) + "\n")
+
+print(f"Saved {len(all_chunks)} chunks to data/chunks.jsonl")
