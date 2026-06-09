@@ -1,8 +1,15 @@
-from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from backend.rag import answer
 
 app = FastAPI(title="AI Support Assistant")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Question(BaseModel):
     question: str
@@ -13,5 +20,10 @@ def health():
 
 @app.post("/ask")
 def ask(payload: Question):
-    result = answer(payload.question)
-    return {"question": payload.question, "answer": result}
+    if not payload.question.strip():
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
+    try:
+        result = answer(payload.question)
+        return {"question": payload.question, "answer": result}
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Answer generation failed: {e}")
