@@ -1,7 +1,8 @@
-from backend.rag import model, collection, groq_client
+from backend.rag import _get_clients
 from backend.graph import related_pages
 
 def graph_answer(question: str) -> str:
+    model, collection, groq_client = _get_clients()
     q_vec = model.encode([question]).tolist()
     top = collection.query(query_embeddings=q_vec, n_results=1)
     start_url = top["metadatas"][0][0]["url"]

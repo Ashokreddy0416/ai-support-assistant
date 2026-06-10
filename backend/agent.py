@@ -1,5 +1,5 @@
 from typing import TypedDict
-from backend.rag import groq_client
+from backend.rag import _get_clients
 from backend.rag import answer
 from backend.graph_rag import graph_answer
 from langgraph.graph import StateGraph, START, END
@@ -10,6 +10,7 @@ class AgentState(TypedDict):
     answer: str
 
 def router(state: AgentState) -> AgentState:
+    _, _, groq_client = _get_clients()
     prompt = f"""Classify this question into exactly one word:
 - "clarify" if it is too vague to answer (e.g. "help", "it's broken")
 - "graph" if it asks how multiple things connect or work together

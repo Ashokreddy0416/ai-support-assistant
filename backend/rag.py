@@ -6,12 +6,21 @@ import chromadb
 
 load_dotenv()
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
-chroma = chromadb.PersistentClient(path="data/chroma")
-collection = chroma.get_collection("fastapi_docs")
-groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
+_model = None
+_collection = None
+_groq_client = None
+
+def _get_clients():
+    global _model, _collection, _groq_client
+    if _model is None:
+        _model = SentenceTransformer("all-MiniLM-L6-v2")
+        chroma = chromadb.PersistentClient(path="data/chroma")
+        _collection = chroma.get_collection("fastapi_docs")
+        _groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
+    return _model, _collection, _groq_client
 
 def answer(question: str, k: int = 3) -> str:
+    model, collection, groq_client = _get_clients()
     q_vec = model.encode([question]).tolist()
     results = collection.query(query_embeddings=q_vec, n_results=k)
     context = "\n\n".join(results["documents"][0])
