@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const [question, setQuestion] = useState("");
@@ -42,8 +42,23 @@ export default function Home() {
     if (res.ok) {
       const data = await res.json();
       setToken(data.access_token);
+      loadHistory(data.access_token);
     } else {
       alert("Login failed");
+    }
+  }
+
+  async function loadHistory(tok: string) {
+    const res = await fetch("http://localhost:8000/history", {
+      headers: { Authorization: `Bearer ${tok}` },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const past = data.chats.reverse().flatMap((c: any) => [
+        { role: "user", text: c.question },
+        { role: "assistant", text: c.answer, route: c.route },
+      ]);
+      setMessages(past);
     }
   }
 
