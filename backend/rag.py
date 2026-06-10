@@ -1,7 +1,7 @@
 import os
 from groq import Groq
 from dotenv import load_dotenv
-from sentence_transformers import SentenceTransformer
+from light_embed import TextEmbedding
 import chromadb
 
 load_dotenv()
@@ -13,7 +13,7 @@ _groq_client = None
 def _get_clients():
     global _model, _collection, _groq_client
     if _model is None:
-        _model = SentenceTransformer("all-MiniLM-L6-v2")
+        _model = TextEmbedding("sentence-transformers/all-MiniLM-L6-v2")
         chroma = chromadb.PersistentClient(path="data/chroma")
         _collection = chroma.get_collection("fastapi_docs")
         _groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
