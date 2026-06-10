@@ -3,13 +3,15 @@ import { useState } from "react";
 
 export default function Home() {
   const [question, setQuestion] = useState("");
-  const [messages, setMessages] = useState<{role: string, text: string}[]>([]);
+  const [messages, setMessages] = useState<{role: string, text: string, route?: string}[]>([]);
+  const [loading, setLoading] = useState(false);
 
   async function send() {
     if (!question.trim()) return;
     const q = question;
     setMessages((m) => [...m, { role: "user", text: q }]);
     setQuestion("");
+    setLoading(true);
     try {
       const res = await fetch("http://127.0.0.1:8000/agent", {
         method: "POST",
@@ -17,9 +19,11 @@ export default function Home() {
         body: JSON.stringify({ question: q }),
       });
       const data = await res.json();
-      setMessages((m) => [...m, { role: "assistant", text: data.answer }]);
+      setMessages((m) => [...m, { role: "assistant", text: data.answer, route: data.route }]);
     } catch (e) {
       setMessages((m) => [...m, { role: "assistant", text: "Error reaching server." }]);
+    } finally {
+      setLoading(false);
     }
   }
 
