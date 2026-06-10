@@ -18,7 +18,10 @@ export default function Home() {
     try {
       const res = await fetch("http://localhost:8000/agent", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ question: q }),
       });
       const data = await res.json();
