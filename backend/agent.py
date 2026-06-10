@@ -2,6 +2,7 @@ from typing import TypedDict
 from backend.rag import groq_client
 from backend.rag import answer
 from backend.graph_rag import graph_answer
+from langgraph.graph import StateGraph, START, END
 
 class AgentState(TypedDict):
     question: str
@@ -32,3 +33,23 @@ def graph_node(state: AgentState) -> AgentState:
 
 def clarify_node(state: AgentState) -> AgentState:
     return {"answer": "Could you be more specific? Tell me what you're trying to do and which part of FastAPI you mean."}
+
+builder = StateGraph(AgentState)
+builder.add_node("router", router)
+builder.add_node("vector", vector_node)
+builder.add_node("graph", graph_node)
+builder.add_node("clarify", clarify_node)
+
+builder.add_edge(START, "router")
+builder.add_conditional_edges("router", lambda s: s["route"],
+    {"vector": "vector", "graph": "graph", "clarify": "clarify"})
+builder.add_edge("vector", END)
+builder.add_edge("graph", END)
+builder.add_edge("clarify", END)
+
+agent = builder.compile()
+
+if __name__ == "__main__":
+    result = agent.invoke({"question": "how do auth and dependencies work together"})
+    print("ROUTE:", result["route"])
+    print("ANSWER:", result["answer"])
