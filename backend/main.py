@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from backend.rag import answer
 from backend.graph_rag import graph_answer
+from backend.agent import agent
 
 app = FastAPI(title="AI Support Assistant")
 app.add_middleware(
@@ -38,3 +39,17 @@ def ask_graph(payload: Question):
         return {"question": payload.question, "answer": result, "mode": "graph"}
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Graph answer failed: {e}")
+    
+@app.post("/agent")
+def ask_agent(payload: Question):
+    if not payload.question.strip():
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
+    try:
+        result = agent.invoke({"question": payload.question})
+        return {
+            "question": payload.question,
+            "answer": result["answer"],
+            "route": result["route"],
+        }
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Agent failed: {e}")
