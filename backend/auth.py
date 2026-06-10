@@ -27,3 +27,9 @@ def save_chat(token: str, question: str, answer: str, route: str):
         "route": route,
     }).execute()
     return user.id
+
+def get_history(token: str):
+    get_user_from_token(token)
+    supabase.postgrest.auth(token)
+    res = supabase.table("chats").select("*").order("created_at", desc=True).limit(20).execute()
+    return res.data

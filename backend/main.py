@@ -75,3 +75,13 @@ def login(creds: Credentials):
         return {"access_token": token}
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+@app.get("/history")
+def history(authorization: str = Header(None)):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Login required")
+    try:
+        token = authorization.replace("Bearer ", "")
+        return {"chats": get_history(token)}
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
