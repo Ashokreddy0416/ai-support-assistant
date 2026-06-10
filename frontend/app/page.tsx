@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 
 export default function Home() {
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<{role: string, text: string, route?: string}[]>([]);
   const [loading, setLoading] = useState(false);
@@ -16,7 +17,7 @@ export default function Home() {
     setQuestion("");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/agent", {
+      const res = await fetch(`${API}/agent`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,7 +35,7 @@ export default function Home() {
   }
 
   async function login() {
-    const res = await fetch("http://localhost:8000/login", {
+    const res = await fetch(`${API}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -49,7 +50,7 @@ export default function Home() {
   }
 
   async function loadHistory(tok: string) {
-    const res = await fetch("http://localhost:8000/history", {
+    const res = await fetch(`${API}/history`, {
       headers: { Authorization: `Bearer ${tok}` },
     });
     if (res.ok) {
